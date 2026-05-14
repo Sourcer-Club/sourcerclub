@@ -188,51 +188,40 @@ function toggleTheme(){
   localStorage.setItem('sc-theme', isDark ? 'dark' : 'light');
 }
 
-// Hashnode blog fetch
+// Hashnode blog fetch via RSS (no CORS issues)
 (async function(){
   const container = document.getElementById('sc-blog-list');
   try {
-    const res = await fetch('https://gql.hashnode.com/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: `{
-        publication(host: "blog.sourcer.club") {
-          posts(first: 3) {
-            edges {
-              node {
-                title
-                url
-                publishedAt
-                brief
-                readTimeInMinutes
-                coverImage { url }
-              }
-            }
-          }
-        }
-      }` })
-    });
-    const data = await res.json();
-    const posts = data?.data?.publication?.posts?.edges;
-    if (!posts || posts.length === 0) {
+    const res = await fetch('https://blog.sourcer.club/rss.xml');
+    const text = await res.text();
+    const xml = new DOMParser().parseFromString(text, 'text/xml');
+    const items = [...xml.querySelectorAll('item')].slice(0, 3);
+    if (!items.length) {
       container.innerHTML = '<div class="sc-blog-error">No posts yet.</div>';
       return;
     }
     const fmt = d => new Date(d).toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' });
     container.innerHTML = `
       <div class="sc-blog-posts">
-        ${posts.map(({node}) => `
-          <a class="sc-blog-post" href="${node.url}" target="_blank">
+        ${items.map(item => {
+          const title = item.querySelector('title')?.textContent || '';
+          const url = item.querySelector('link')?.textContent || '#';
+          const pubDate = item.querySelector('pubDate')?.textContent || '';
+          const brief = item.querySelector('description')?.textContent?.replace(/<[^>]+>/g,'').slice(0,160) || '';
+          const enclosure = item.querySelector('enclosure');
+          const img = enclosure?.getAttribute('url') || '';
+          return `
+          <a class="sc-blog-post" href="${url}" target="_blank">
             <div class="sc-blog-post-left">
-              <div class="sc-blog-post-title">${node.title}</div>
-              ${node.brief ? `<div class="sc-blog-post-brief">${node.brief}</div>` : ''}
+              <div class="sc-blog-post-title">${title}</div>
+              ${brief ? `<div class="sc-blog-post-brief">${brief}</div>` : ''}
               <div class="sc-blog-post-meta">
-                <span>${fmt(node.publishedAt)}</span>
-                ${node.readTimeInMinutes ? `<span class="sc-blog-post-meta-dot">·</span><span>${node.readTimeInMinutes} min read</span>` : ''}
+                <span>${fmt(pubDate)}</span>
               </div>
             </div>
-            ${node.coverImage?.url ? `<img class="sc-blog-post-img" src="${node.coverImage.url}" alt="" loading="lazy"/>` : ''}
-          </a>`).join('')}
+            ${img ? `<img class="sc-blog-post-img" src="${img}" alt="" loading="lazy"/>` : ''}
+          </a>`;
+        }).join('')}
       </div>
       <a class="sc-blog-all" href="https://blog.sourcer.club" target="_blank">all posts →</a>`;
   } catch(e) {
