@@ -192,7 +192,7 @@ function toggleTheme(){
 (async function(){
   const container = document.getElementById('sc-blog-list');
   try {
-    const res = await fetch('https://gql.hashnode.com', {
+    const res = await fetch('https://gql.hashnode.com/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: `{
