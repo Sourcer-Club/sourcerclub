@@ -178,55 +178,44 @@
   </footer>
 </div>
 <script>
+// Blog posts – update manually when new post is published
 (function(){
-  const saved = localStorage.getItem('sc-theme');
-  if(saved === 'light') document.getElementById('scRoot').classList.remove('dark');
-})();
-function toggleTheme(){
-  const root = document.getElementById('scRoot');
-  const isDark = root.classList.toggle('dark');
-  localStorage.setItem('sc-theme', isDark ? 'dark' : 'light');
-}
-
-// Hashnode blog fetch via RSS (no CORS issues)
-(async function(){
-  const container = document.getElementById('sc-blog-list');
-  try {
-    const res = await fetch('https://blog.sourcer.club/rss.xml');
-    const text = await res.text();
-    const xml = new DOMParser().parseFromString(text, 'text/xml');
-    const items = [...xml.querySelectorAll('item')].slice(0, 3);
-    if (!items.length) {
-      container.innerHTML = '<div class="sc-blog-error">No posts yet.</div>';
-      return;
+  const posts = [
+    {
+      title: "The JD Is Not the Brief",
+      url: "https://blog.sourcer.club/the-jd-is-not-the-brief",
+      date: "May 5, 2026",
+      brief: "The JD tells you what to hire. It won't tell you how and where to look. Here's a quick review on how some Semiconductor and Product Engineering roles were dealt with.",
+      img: ""
+    },
+    {
+      title: "The Search That Fools You",
+      url: "https://blog.sourcer.club/the-search-that-fools-you",
+      date: "Apr 30, 2026",
+      brief: "When a Data Engineer role lands on your desk, most recruiters open their ATS or LinkedIn and type exactly two words: Data Engineer. Here's why that fails in both directions.",
+      img: ""
+    },
+    {
+      title: "Ruby Developer role search with Sourcer.club tools",
+      url: "https://blog.sourcer.club/ruby-developer-role-search-with-sourcer-club-tools",
+      date: "Apr 21, 2026",
+      brief: "How three Sourcer.club tools — SignalScoper, RepoScoper, and ReputeScoper, held up on a real RoR dev search in Chennai.",
+      img: ""
     }
-    const fmt = d => new Date(d).toLocaleDateString('en-US', { day:'numeric', month:'short', year:'numeric' });
-    container.innerHTML = `
-      <div class="sc-blog-posts">
-        ${items.map(item => {
-          const title = item.querySelector('title')?.textContent || '';
-          const url = item.querySelector('link')?.textContent || '#';
-          const pubDate = item.querySelector('pubDate')?.textContent || '';
-          const brief = item.querySelector('description')?.textContent?.replace(/<[^>]+>/g,'').slice(0,160) || '';
-          const enclosure = item.querySelector('enclosure');
-          const img = enclosure?.getAttribute('url') || '';
-          return `
-          <a class="sc-blog-post" href="${url}" target="_blank">
-            <div class="sc-blog-post-left">
-              <div class="sc-blog-post-title">${title}</div>
-              ${brief ? `<div class="sc-blog-post-brief">${brief}</div>` : ''}
-              <div class="sc-blog-post-meta">
-                <span>${fmt(pubDate)}</span>
-              </div>
-            </div>
-            ${img ? `<img class="sc-blog-post-img" src="${img}" alt="" loading="lazy"/>` : ''}
-          </a>`;
-        }).join('')}
-      </div>
-      <a class="sc-blog-all" href="https://blog.sourcer.club" target="_blank">all posts →</a>`;
-  } catch(e) {
-    container.innerHTML = '<div class="sc-blog-error">Could not load posts.</div>';
-  }
+  ];
+  const container = document.getElementById('sc-blog-list');
+  container.innerHTML = `
+    <div class="sc-blog-posts">
+      ${posts.map(p => `
+        <a class="sc-blog-post" href="${p.url}" target="_blank">
+          <div class="sc-blog-post-left">
+            <div class="sc-blog-post-title">${p.title}</div>
+            <div class="sc-blog-post-brief">${p.brief}</div>
+            <div class="sc-blog-post-meta"><span>${p.date}</span></div>
+          </div>
+        </a>`).join('')}
+    </div>
+    <a class="sc-blog-all" href="https://blog.sourcer.club" target="_blank">all posts →</a>`;
 })();
 </script>
 </body>
