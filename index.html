@@ -178,6 +178,16 @@
   </footer>
 </div>
 <script>
+  (function(){
+  const saved = localStorage.getItem('sc-theme');
+  if(saved === 'light') document.getElementById('scRoot').classList.remove('dark');
+})();
+
+function toggleTheme(){
+  const root = document.getElementById('scRoot');
+  const isDark = root.classList.toggle('dark');
+  localStorage.setItem('sc-theme', isDark ? 'dark' : 'light');
+}
 // Blog posts – update manually when new post is published
 (function(){
   const posts = [
